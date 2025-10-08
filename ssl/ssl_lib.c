@@ -232,15 +232,18 @@ static int dane_mtype_set(struct dane_ctx_st *dctx,
         uint8_t *mdord;
         int n = ((int)mtype) + 1;
 
-        mdevp = OPENSSL_realloc_array(dctx->mdevp, n, sizeof(*mdevp));
-        if (mdevp == NULL)
+        const EVP_MD **new_mdevp = OPENSSL_realloc_array(dctx->mdevp, n, sizeof(*new_mdevp));
+        if (new_mdevp == NULL)
             return -1;
-        dctx->mdevp = mdevp;
 
-        mdord = OPENSSL_realloc_array(dctx->mdord, n, sizeof(*mdord));
-        if (mdord == NULL)
+        uint8_t *new_mdord = OPENSSL_realloc_array(dctx->mdord, n, sizeof(*new_mdord));
+        if (new_mdord == NULL) {
+            OPENSSL_free(new_mdevp);
             return -1;
-        dctx->mdord = mdord;
+        }
+
+        dctx->mdevp = new_mdevp;
+        dctx->mdord = new_mdord;
 
         /* Zero-fill any gaps */
         for (i = dctx->mdmax + 1; i < mtype; ++i) {
