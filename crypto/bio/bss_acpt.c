@@ -414,6 +414,7 @@ static long acpt_ctrl(BIO *b, int cmd, long num, void *ptr)
         acpt_close_socket(b);
         BIO_ADDRINFO_free(data->addr_first);
         data->addr_first = NULL;
+        data->addr_iter = NULL;
         b->flags = 0;
         break;
     case BIO_C_DO_STATE_MACHINE:
@@ -498,21 +499,26 @@ static long acpt_ctrl(BIO *b, int cmd, long num, void *ptr)
                 pp = (char **)ptr;
                 *pp = data->cache_peer_serv;
             } else if (num == 4) {
-                switch (BIO_ADDRINFO_family(data->addr_iter)) {
-#if OPENSSL_USE_IPV6
-                case AF_INET6:
-                    ret = BIO_FAMILY_IPV6;
-                    break;
-#endif
-                case AF_INET:
-                    ret = BIO_FAMILY_IPV4;
-                    break;
-                case 0:
+                if (data->addr_iter == NULL) {
+                    /* No resolved address yet or after reset */
                     ret = data->accept_family;
-                    break;
-                default:
-                    ret = -1;
-                    break;
+                } else {
+                    switch (BIO_ADDRINFO_family(data->addr_iter)) {
+#if OPENSSL_USE_IPV6
+                    case AF_INET6:
+                        ret = BIO_FAMILY_IPV6;
+                        break;
+#endif
+                    case AF_INET:
+                        ret = BIO_FAMILY_IPV4;
+                        break;
+                    case 0:
+                        ret = data->accept_family;
+                        break;
+                    default:
+                        ret = -1;
+                        break;
+                    }
                 }
             } else
                 ret = -1;
