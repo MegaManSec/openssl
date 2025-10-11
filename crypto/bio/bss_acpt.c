@@ -205,8 +205,13 @@ static int acpt_state(BIO *b, BIO_ACCEPT *c)
                     goto exit_loop;
                 }
                 if (BIO_lookup(c->param_addr, c->param_serv, BIO_LOOKUP_SERVER,
-                               family, SOCK_STREAM, &c->addr_first) == 0)
+                               family, SOCK_STREAM, &c->addr_first) == 0) {
+                    ERR_raise_data(ERR_LIB_BIO,
+                                   BIO_R_LOOKUP_RETURNED_NOTHING,
+                                   "addr=%s, service=%s",
+                                   c->param_addr, c->param_serv);
                     goto exit_loop;
+                }
             }
             if (c->addr_first == NULL) {
                 ERR_raise(ERR_LIB_BIO, BIO_R_LOOKUP_RETURNED_NOTHING);
