@@ -1575,6 +1575,7 @@ static void port_default_packet_handler(QUIC_URXE *e, void *arg,
         goto undesirable;
 
     odcid.id_len = 0;
+    scid = hdr.src_conn_id;
 
     /*
      * Create qrx now so we can check integrity of packet
