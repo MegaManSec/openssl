@@ -2327,27 +2327,28 @@ static int ch_rx(QUIC_CHANNEL *ch, int channel_only, int *notify_other_threads)
 
 static int bio_addr_eq(const BIO_ADDR *a, const BIO_ADDR *b)
 {
+    int eq = 0;
+
     if (BIO_ADDR_family(a) != BIO_ADDR_family(b))
         return 0;
 
     switch (BIO_ADDR_family(a)) {
         case AF_INET:
-            return !memcmp(&a->s_in.sin_addr,
-                           &b->s_in.sin_addr,
-                           sizeof(a->s_in.sin_addr))
-                && a->s_in.sin_port == b->s_in.sin_port;
+            eq = memcmp(&a->s_in.sin_addr, &b->s_in.sin_addr,
+                    sizeof(a->s_in.sin_addr)) == 0
+                 && a->s_in.sin_port == b->s_in.sin_port;
+            break;
 #if OPENSSL_USE_IPV6
         case AF_INET6:
-            return !memcmp(&a->s_in6.sin6_addr,
-                           &b->s_in6.sin6_addr,
-                           sizeof(a->s_in6.sin6_addr))
-                && a->s_in6.sin6_port == b->s_in6.sin6_port;
+            eq = memcmp(&a->s_in6.sin6_addr, &b->s_in6.sin6_addr,
+                        sizeof(a->s_in6.sin6_addr)) == 0
+                 && a->s_in6.sin6_port == b->s_in6.sin6_port;
+            break;
 #endif
         default:
-            return 0; /* not supported */
+            break; /* 0 for not supported */
     }
-
-    return 1;
+    return eq;
 }
 
 /* Handles the packet currently in ch->qrx_pkt->hdr. */
