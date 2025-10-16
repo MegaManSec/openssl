@@ -499,26 +499,21 @@ static long acpt_ctrl(BIO *b, int cmd, long num, void *ptr)
                 pp = (char **)ptr;
                 *pp = data->cache_peer_serv;
             } else if (num == 4) {
-                if (data->addr_iter == NULL) {
-                    /* No resolved address yet or after reset */
-                    ret = data->accept_family;
-                } else {
-                    switch (BIO_ADDRINFO_family(data->addr_iter)) {
+                switch (BIO_ADDRINFO_family(data->addr_iter)) {
 #if OPENSSL_USE_IPV6
-                    case AF_INET6:
-                        ret = BIO_FAMILY_IPV6;
-                        break;
+                case AF_INET6:
+                    ret = BIO_FAMILY_IPV6;
+                    break;
 #endif
-                    case AF_INET:
-                        ret = BIO_FAMILY_IPV4;
-                        break;
-                    case 0:
-                        ret = data->accept_family;
-                        break;
-                    default:
-                        ret = -1;
-                        break;
-                    }
+                case AF_INET:
+                    ret = BIO_FAMILY_IPV4;
+                    break;
+                case 0:
+                    ret = data->accept_family;
+                    break;
+                default:
+                    ret = -1;
+                    break;
                 }
             } else
                 ret = -1;
